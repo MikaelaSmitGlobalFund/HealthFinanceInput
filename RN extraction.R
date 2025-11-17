@@ -44,7 +44,7 @@ library(janitor)
 # Set computer, wd and load data
 if (computer ==1){
   setwd("/Users/mc1405/RCode/HDF code/")
-  output_path = "/Users/mc1405/RCode/HDF code/OuOutput"
+  output_path = "/Users/mc1405/RCode/HDF code/Output"
 }
   
 # Load the model data
@@ -144,3 +144,17 @@ df_malaria_rn_sum <- df_malaria_rn %>%
   group_by(iso3) %>%
   summarise(RN = sum(total_cost, na.rm = TRUE), .groups = "drop") %>%
   arrange(iso3)
+
+
+# Save summed RN data for 2027–2029 using the existing output_path
+write.csv(df_hiv_rn_sum,
+          file = file.path(output_path, "HIV_RN_2027_2029.csv"),
+          row.names = FALSE)
+
+write.csv(df_tb_rn_sum,
+          file = file.path(output_path, "TB_RN_2027_2029.csv"),
+          row.names = FALSE)
+
+write.csv(df_malaria_rn_sum,
+          file = file.path(output_path, "Malaria_RN_2027_2029.csv"),
+          row.names = FALSE)
