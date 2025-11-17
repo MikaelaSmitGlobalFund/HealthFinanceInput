@@ -16,12 +16,6 @@ rm(list = ls())
 firstrun   = 0                            # If need to install package change to 1
 computer   = 1                            # 1 = Mikaela # Add additional computer if needed
 
-# Set Year reference
-start_year_min     = 2014                 # This cuts off the first year and removes years were HIVneg with the lag are wrong
-start_year_base    = 2021                 # This year is the base year of reporting, in this case 2021
-end_year_all       = 2023                 # This is the year of latest partner data
-end_year_sdg       = 2030                 # This is the final year of prediction
-
 # Install packages if necessary
 if(firstrun>0) {
   install.packages("dplyr")
@@ -30,7 +24,6 @@ if(firstrun>0) {
   installed.packages("readr")
   installed.packages("openxlsx")
   installed.packages("here")
-  installed.packages("janitor")
 }
 
 library(dplyr) # require instead
@@ -39,7 +32,7 @@ library(tidyr)
 library(readr)      # for read_csv()
 library(openxlsx)   # for read.xlsx() that keeps empty rows
 library(here)
-library(janitor)
+
 
 # Set computer, wd and load data
 if (computer ==1){
@@ -47,8 +40,10 @@ if (computer ==1){
   output_path = "/Users/mc1405/RCode/HDF code/Output"
 }
   
+
 # Load the model data
 model_dir <- file.path(getwd(), "model_output")
+
 
 # Helper: read Excel while KEEPING blank rows/cols
 read_excel_keep_empty <- function(path, sheet = 1){
@@ -62,10 +57,12 @@ read_excel_keep_empty <- function(path, sheet = 1){
   )
 }
 
+
 # File paths
 hiv_path     <- file.path(model_dir, "HIV cost impact results 15oct24.csv")
 malaria_path <- file.path(model_dir, "output_2024_09_13.xlsx")
 hbc_path     <- file.path(model_dir, "HBC_results_OneFile_2024_10_15.xlsx")
+
 
 # Load the data
 df_hiv2     <- readr::read_csv(hiv_path, show_col_types = FALSE)       # CSV
@@ -84,7 +81,6 @@ df_malaria_rn <- df_malaria2 %>%
 df_tb_rn <- df_tb2 %>%
   filter(Scenario == "PF_09") %>%
   transmute(iso3, year, Costs, vacc_costs)
-
 
 # 3) HIV: Keep only Step-scenarios and parse step number + numeric PLHIV
 hiv_steps <- df_hiv2 %>%
