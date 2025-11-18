@@ -68,11 +68,6 @@ DAH_Allocated <- direct_dah_raw %>%
   rename(ISO3 = ISO) %>%
   select(ISO3, inH, inT, inM, Direct_H, Direct_T, Direct_M)
 
-# Save country-specific, non-fungible allocations
-write.csv(DAH_Allocated,
-          file = file.path(output_path, "DAH_Allocated.csv"),
-          row.names = FALSE)
-
 
 # --- 2) Read the whole DAH_QZA sheet (no headers)
 qza <- read.xlsx(dah_file, sheet = "DAH_QZA", colNames = FALSE, rowNames = FALSE)
@@ -153,5 +148,17 @@ DAH_Unallocated <- DAH_Allocated %>%
 # Save
 write.csv(DAH_Unallocated,
           file.path(output_path, "DAH_Unallocated.csv"),
+          row.names = FALSE)
+
+# Clean and save country-specific, non-fungible allocations
+DAH_Allocated <- DAH_Allocated %>%
+  select(ISO3, Direct_H, Direct_T, Direct_M) %>%
+  rename(Alloc_H = Direct_H) %>%
+  rename(Alloc_T = Direct_T) %>%
+  rename(Alloc_M = Direct_M)
+
+
+write.csv(DAH_Allocated,
+          file = file.path(output_path, "DAH_Allocated.csv"),
           row.names = FALSE)
 
