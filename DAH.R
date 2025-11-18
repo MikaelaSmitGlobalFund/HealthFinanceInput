@@ -123,7 +123,7 @@ distribute <- function(df, elig_col, weight_col, total_amount) {
     if (s > 0) {
       alloc[idx] <- total_amount * (w[idx] / s)
     } else {
-      # all eligible weights are zero -> split equally among eligibles
+      # all eligible weights are zero -> split equally among eligible
       alloc[idx] <- total_amount / length(idx)
     }
   }
