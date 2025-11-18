@@ -80,7 +80,8 @@ hiv_drm <- hiv_raw %>%
   )
 
 hiv_drm <- hiv_drm %>%
-  filter(!is.na(iso3), iso3 != "")
+  filter(!is.na(iso3), iso3 != "") %>%
+  select(iso3, econgrowth_uncap, dipi50_uncap, dipi80_uncap)
 
 
 # ---- 2.TB ----
