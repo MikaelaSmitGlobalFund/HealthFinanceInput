@@ -161,5 +161,15 @@ mal_drm <- mal_drm %>%
   ) %>%
   arrange(iso3)
 
+# Save
+write.csv(hiv_drm,
+          file = file.path(output_path, "HIV_DRM.csv"),
+          row.names = FALSE)
 
+write.csv(tb_drm,
+          file = file.path(output_path, "TB_DRM.csv"),
+          row.names = FALSE)
 
+write.csv(mal_drm,
+          file = file.path(output_path, "Malaria_DRM.csv"),
+          row.names = FALSE)
