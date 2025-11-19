@@ -6,9 +6,7 @@
 # Central switchboard gives you option of choosing which diseases to run
 
 
-rm(list = ls())
-
-#######################
+rm(list = ls())#######################
 # Central Switchboard #
 #######################
 
@@ -59,9 +57,9 @@ read_excel_keep_empty <- function(path, sheet = 1){
 
 
 # File paths
-hiv_path     <- file.path(model_dir, "HIV cost impact results 15oct24.csv")
-malaria_path <- file.path(model_dir, "output_2024_09_13.xlsx")
-hbc_path     <- file.path(model_dir, "HBC_results_OneFile_2024_10_15.xlsx")
+hiv_path     <- file.path(model_dir, "HIV cost impact results 12nov24.csv")
+malaria_path <- file.path(model_dir, "output.xlsx")
+hbc_path     <- file.path(model_dir, "HBC_results_OneFile.xlsx")
 
 
 # Load the data
@@ -70,17 +68,36 @@ df_malaria2 <- read_excel_keep_empty(malaria_path)                     # XLSX
 df_tb2      <- read_excel_keep_empty(hbc_path)                         # XLSX with blank
 
 
-# 1) MALARIA: keep iso3, year, total_cost, cost_vaccine
+# 1) MALARIA: keep iso3, year, and generate costs minus vaccine costs
 #    filter Scenario == "PF_20_CC" AND vaccine_compete == 0
 df_malaria_rn <- df_malaria2 %>%
   filter(scenario == "PF_20_CC", vaccine_compete == 0) %>%
-  transmute(iso3, year, total_cost, cost_vaccine)
+  mutate(
+    RN_cost = as.numeric(total_cost) - as.numeric(cost_vaccine)
+  ) %>%
+  select(iso3, year, RN_cost)
 
-# 2) TB (HBC): keep iso3, year, Costs, vacc_costs
+df_malaria_rn_sum <- df_malaria_rn %>%
+  filter(year >= 2027 & year <= 2029) %>%
+  group_by(iso3) %>%
+  summarise(RN = sum(RN_cost, na.rm = TRUE), .groups = "drop") %>%
+  arrange(iso3)
+
+
+# 2) TB: keep iso3, year, and generate costs minus vaccine costs
 #    filter Scenario == "PF_09"
 df_tb_rn <- df_tb2 %>%
   filter(Scenario == "PF_09") %>%
-  transmute(iso3, year, Costs, vacc_costs)
+  mutate(
+    RN_cost = as.numeric(Costs) - as.numeric(vacc_costs)
+  ) %>%
+  select(iso3, year, RN_cost)
+
+df_tb_rn_sum <- df_tb_rn %>%
+  filter(year >= 2027 & year <= 2029) %>%
+  group_by(iso3) %>%
+  summarise(RN = sum(RN_cost, na.rm = TRUE), .groups = "drop") %>%
+  arrange(iso3)
 
 # 3) HIV: Keep only Step-scenarios and parse step number + numeric PLHIV
 hiv_steps <- df_hiv2 %>%
@@ -129,17 +146,6 @@ df_hiv_rn_sum <- df_hiv_rn %>%
   summarise(RN = sum(Total_cost, na.rm = TRUE), .groups = "drop") %>%
   arrange(iso3)
 
-df_tb_rn_sum <- df_tb_rn %>%
-  filter(year >= 2027 & year <= 2029) %>%
-  group_by(iso3) %>%
-  summarise(RN = sum(Costs, na.rm = TRUE), .groups = "drop") %>%
-  arrange(iso3)
-
-df_malaria_rn_sum <- df_malaria_rn %>%
-  filter(year >= 2027 & year <= 2029) %>%
-  group_by(iso3) %>%
-  summarise(RN = sum(total_cost, na.rm = TRUE), .groups = "drop") %>%
-  arrange(iso3)
 
 
 # Save summed RN data for 2027–2029 using the existing output_path
