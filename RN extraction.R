@@ -127,13 +127,20 @@ hiv_steps <- df_hiv2 %>%
   ) %>%
   arrange(iso3, year, step_num)
 
-last_valid <- hiv_steps %>%
+# Limit to Step 7–13 only
+hiv_steps_valid <- hiv_steps %>%
+  filter(step_num >= 7, step_num <= 13)
+
+last_valid <- hiv_steps_valid %>%
   group_by(iso3, year) %>%
   summarise(
     last_valid_step = {
       prefix_ok <- cumall(!is.na(PLHIV_num))
-      if (any(prefix_ok)) max(step_num[prefix_ok], na.rm = TRUE)
-      else NA_integer_
+      if (any(prefix_ok)) {
+        max(step_num[prefix_ok], na.rm = TRUE)
+      } else {
+        NA_integer_
+      }
     },
     .groups = "drop"
   ) %>%
