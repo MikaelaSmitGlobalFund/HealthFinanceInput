@@ -1,9 +1,7 @@
-# First Version: 17th November 2025 by Mikaela Smit
-
-
-# SCRIPT DISCRIPTION: 
-# This code will extract the DAH from the Stephen's files
-# Central switchboard gives you option of choosing which diseases to run
+# -----------------------------------------
+# Capping
+# First Version: 17 Nov 2025 (cleaned)
+# -----------------------------------------
 
 rm(list = ls())
 
@@ -82,7 +80,9 @@ to_num <- function(x) {
 
 
 # Let's cap
-# ---- 1) HIV ____
+# ================================================================
+# ---- 1) HIV NON_FUNGIBLE  ----
+# ================================================================
 # Merge RN + DRM + DAH allocated by iso3
 hiv_df <- hiv_rn %>%
   mutate(iso3 = as.character(iso3)) %>%
@@ -158,5 +158,150 @@ write.csv(
   file.path(output_path, "hiv_nonfung_dipi80_c.csv"),
   row.names = FALSE
 )
+
+# ================================================================
+# ---- 2) TB NON_FUNGIBLE  ----
+# ================================================================
+
+tb_df <- tb_rn %>%
+  mutate(iso3 = as.character(iso3)) %>%
+  left_join(tb_drm %>% mutate(iso3 = as.character(iso3)),
+            by = "iso3") %>%
+  left_join(dah_alloc %>%
+              mutate(iso3 = as.character(iso3)) %>%
+              select(iso3, Alloc_T),
+            by = "iso3")
+
+# ensure numerics
+tb_df <- tb_df %>%
+  mutate(
+    RN                = to_num(RN),
+    econgrowth_uncap  = to_num(econgrowth_uncap),
+    dipi50_uncap      = to_num(dipi50_uncap),
+    dipi80_uncap      = to_num(dipi80_uncap),
+    Alloc_T           = to_num(Alloc_T)
+  ) %>%
+  mutate(across(c(RN, econgrowth_uncap, dipi50_uncap, dipi80_uncap, Alloc_T),
+                ~ tidyr::replace_na(.x, 0)))
+
+# sum domestic + allocated
+tb_df <- tb_df %>%
+  mutate(
+    summed_nonfung_econgrowth = econgrowth_uncap + Alloc_T,
+    summed_nonfung_dipi50     = dipi50_uncap     + Alloc_T,
+    summed_nonfung_dipi80     = dipi80_uncap     + Alloc_T
+  )
+
+# capped values + deltas
+tb_df <- tb_df %>%
+  mutate(
+    econgrowth_capped = pmin(summed_nonfung_econgrowth, RN),
+    dipi50_capped     = pmin(summed_nonfung_dipi50,     RN),
+    dipi80_capped     = pmin(summed_nonfung_dipi80,     RN),
+    
+    delta_econgrowth  = pmax(summed_nonfung_econgrowth - RN, 0),
+    delta_dipi50      = pmax(summed_nonfung_dipi50     - RN, 0),
+    delta_dipi80      = pmax(summed_nonfung_dipi80     - RN, 0)
+  )
+
+# --- Override IND values for TB: use dipi50 scenario instead of economic growth ---
+tb_df <- tb_df %>%
+  mutate(
+    econgrowth_capped = ifelse(iso3 == "IND", dipi50_capped, econgrowth_capped),
+    delta_econgrowth  = ifelse(iso3 == "IND", delta_dipi50,   delta_econgrowth)
+  )
+
+# Save TB non-fungible files (but replace IND econgrowth with dipi50 first)
+
+tb_nonfung_base_c <- tb_df %>%
+  select(country = iso3, cost = econgrowth_capped)
+
+write.csv(tb_nonfung_base_c,
+          file.path(output_path, "tb_nonfung_base_c.csv"),
+          row.names = FALSE)
+
+tb_nonfung_dipi50_c <- tb_df %>%
+  select(country = iso3, cost = dipi50_capped)
+
+write.csv(tb_nonfung_dipi50_c,
+          file.path(output_path, "tb_nonfung_dipi50_c.csv"),
+          row.names = FALSE)
+
+tb_nonfung_dipi80_c <- tb_df %>%
+  select(country = iso3, cost = dipi80_capped)
+
+write.csv(tb_nonfung_dipi80_c,
+          file.path(output_path, "tb_nonfung_dipi80_c.csv"),
+          row.names = FALSE)
+
+
+
+# ================================================================
+# ---- 3) MALARIA NON_FUNGIBLE----
+# ================================================================
+
+mal_df <- mal_rn %>%
+  mutate(iso3 = as.character(iso3)) %>%
+  left_join(mal_drm %>% mutate(iso3 = as.character(iso3)),
+            by = "iso3") %>%
+  left_join(dah_alloc %>%
+              mutate(iso3 = as.character(iso3)) %>%
+              select(iso3, Alloc_M),
+            by = "iso3")
+
+# ensure numerics
+mal_df <- mal_df %>%
+  mutate(
+    RN                = to_num(RN),
+    econgrowth_uncap  = to_num(econgrowth_uncap),
+    dipi50_uncap      = to_num(dipi50_uncap),
+    dipi80_uncap      = to_num(dipi80_uncap),
+    Alloc_M           = to_num(Alloc_M)
+  ) %>%
+  mutate(across(c(RN, econgrowth_uncap, dipi50_uncap, dipi80_uncap, Alloc_M),
+                ~ tidyr::replace_na(.x, 0)))
+
+# sum domestic + allocated
+mal_df <- mal_df %>%
+  mutate(
+    summed_nonfung_econgrowth = econgrowth_uncap + Alloc_M,
+    summed_nonfung_dipi50     = dipi50_uncap     + Alloc_M,
+    summed_nonfung_dipi80     = dipi80_uncap     + Alloc_M
+  )
+
+# capped values + deltas
+mal_df <- mal_df %>%
+  mutate(
+    econgrowth_capped = pmin(summed_nonfung_econgrowth, RN),
+    dipi50_capped     = pmin(summed_nonfung_dipi50,     RN),
+    dipi80_capped     = pmin(summed_nonfung_dipi80,     RN),
+    
+    delta_econgrowth  = pmax(summed_nonfung_econgrowth - RN, 0),
+    delta_dipi50      = pmax(summed_nonfung_dipi50     - RN, 0),
+    delta_dipi80      = pmax(summed_nonfung_dipi80     - RN, 0)
+  )
+
+# Save malaria non-fungible files
+mal_nonfung_base_c <- mal_df %>%
+  select(country = iso3, cost = econgrowth_capped)
+
+write.csv(mal_nonfung_base_c,
+          file.path(output_path, "mal_nonfung_base_c.csv"),
+          row.names = FALSE)
+
+mal_nonfung_dipi50_c <- mal_df %>%
+  select(country = iso3, cost = dipi50_capped)
+
+write.csv(mal_nonfung_dipi50_c,
+          file.path(output_path, "mal_nonfung_dipi50_c.csv"),
+          row.names = FALSE)
+
+mal_nonfung_dipi80_c <- mal_df %>%
+  select(country = iso3, cost = dipi80_capped)
+
+write.csv(mal_nonfung_dipi80_c,
+          file.path(output_path, "mal_nonfung_dipi80_c.csv"),
+          row.names = FALSE)
+
 
 

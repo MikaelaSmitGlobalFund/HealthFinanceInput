@@ -1,9 +1,7 @@
-# First Version: 18th November 2025 by Mikaela Smit
-
-
-# SCRIPT DISCRIPTION: 
-# This code will extract the domestic data from Stephen's files
-# Central switchboard gives you option of choosing which diseases to run
+# -----------------------------------------
+# DRM extraction 
+# First Version: 17 Nov 2025 (cleaned)
+# -----------------------------------------
 
 
 rm(list = ls())
