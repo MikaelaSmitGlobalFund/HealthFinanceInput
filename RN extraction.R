@@ -65,7 +65,7 @@ to_num <- function(x) {
 # ---- Load data  ----
 model_dir <- file.path(getwd(), "model_output")
 
-hiv_path     <- file.path(model_dir, "HIV cost impact results 12nov24.csv")
+hiv_path     <- file.path(model_dir, "HIV cost impact results 7nov24.csv")
 malaria_path <- file.path(model_dir, "output.xlsx")
 hbc_path     <- file.path(model_dir, "HBC_results_OneFile.xlsx")
 
