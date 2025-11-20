@@ -54,7 +54,7 @@ dah_dir <- file.path(getwd(), "stephen_data")
 
 dah_file <- list.files(
   dah_dir,
-  pattern   = "^DAH \\(2\\)\\.xlsx$",
+  pattern   = "^DAH \\.xlsx$",
   full.names = TRUE
 )[1]
 
