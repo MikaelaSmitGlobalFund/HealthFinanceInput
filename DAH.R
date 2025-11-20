@@ -52,11 +52,9 @@ to_num <- function(x) {
 # ---- Load data ----
 dah_dir <- file.path(getwd(), "stephen_data")
 
-dah_file <- list.files(
-  dah_dir,
-  pattern   = "^DAH \\.xlsx$",
-  full.names = TRUE
-)[1]
+dah_file <- file.path(dah_dir, "DAH.xlsx")
+stopifnot(file.exists(dah_file))
+
 
 stopifnot(length(dah_file) == 1)
 
