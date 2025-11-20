@@ -42,7 +42,7 @@ merged_hiv <- nonfung_raw %>%
   select(ISO, HIV_base_DAH_c) %>%     # keep only ISO + fungible HIV
   left_join(hiv_nonfung, by = c("ISO" = "country")) %>%   # add model output
   mutate(
-    ratio_base_to_cost = HIV_base_DAH_c / cost        # NEW ratio
+    ratio_base_to_cost = HIV_base_DAH_c / cost            # compute ratio
   )
 
 
@@ -117,9 +117,14 @@ build_merge_summary <- function(df_ref, df_model, ref_colname) {
   list(merged = merged, summary = summary)
 }
   
-# ---------------------------------------------------------
-# Run for each disease
-# ---------------------------------------------------------
+# --------------------------------------
+# Run for each disease  (NON-FUNGIBLE)  
+# --------------------------------------
+hiv_out <- build_merge_summary(nonfung_raw, hiv_nonfung,  "HIV_base_DAH_c")
+tb_out  <- build_merge_summary(nonfung_raw, tb_nonfung,   "TB_base_DAH_c")
+mal_out <- build_merge_summary(nonfung_raw, mal_nonfung,  "Mal_base_DAH_c")
+
+# Keep only relevant columns in merged tables
 hiv_out$merged <- hiv_out$merged %>%
   select(ISO, HIV_base_DAH_c, cost, ratio, status_icon)
 tb_out$merged <- tb_out$merged %>%
@@ -166,6 +171,10 @@ cat("✔ Excel files saved with icons:\n",
 # Run fungible comparisons
 # ---------------------------------------------------------
 
+hiv_fung_out <- build_merge_summary(fung_raw, hiv_fung, "Fungible_amount_HIV")
+tb_fung_out  <- build_merge_summary(fung_raw, tb_fung,  "Fungible_amount_TB")
+mal_fung_out <- build_merge_summary(fung_raw, mal_fung, "Fungible_amount_Mal")
+
 hiv_fung_out$merged <- hiv_fung_out$merged %>%
   select(ISO, Fungible_amount_HIV, cost, ratio, status_icon)
 
@@ -174,7 +183,6 @@ tb_fung_out$merged <- tb_fung_out$merged %>%
 
 mal_fung_out$merged <- mal_fung_out$merged %>%
   select(ISO, Fungible_amount_Mal, cost, ratio, status_icon)
-
 
 
 # ---------------------------------------------------------

@@ -1,64 +1,42 @@
 # -----------------------------------------
-# DAH extraction and allocation
-# First Version: 17 Nov 2025 (cleaned)
+# 03_extract_DAH.R
+# DAH extraction and QZA allocation
 # -----------------------------------------
 
 rm(list = ls())
 
-# ---- Central Switchboard ----
-firstrun   = 0                            # If need to install package change to 1
-computer   = 1                            # 1 = Mikaela # Add additional computer if needed
-
-
-# ---- Install packages if necessary ----
-if(firstrun>0) {
-  install.packages("dplyr")
-  install.packages("data.table")
-  installed.packages("tidyverse")
-  installed.packages("readr")
-  installed.packages("openxlsx")
-  installed.packages("here")
+# Auto-load settings & helpers if they are not loaded yet
+if (!exists("ROOT_DIR")) {
+  if (file.exists("00_settings.R")) {
+    # working directory is probably RCode/
+    source("00_settings.R")
+  } else if (file.exists("RCode/00_settings.R")) {
+    # working directory is project root
+    source("RCode/00_settings.R")
+  } else {
+    stop("Cannot find 00_settings.R. Check your working directory.")
+  }
 }
 
-library(dplyr) # require instead
-library(data.table)   # For like function (%like%)
-library(tidyr)
-library(readr)      # for read_csv()
-library(openxlsx)   # for read.xlsx() that keeps empty rows
-library(here)
-
-
-# ---- Working directory & output path ----
-if (computer ==1){
-  setwd("/Users/mc1405/RCode/HDF code/")
-  output_path = "/Users/mc1405/RCode/HDF code/Output"
+if (!exists("to_num")) {
+  if (file.exists("01_helpers.R")) {
+    source("01_helpers.R")
+  } else if (file.exists("RCode/01_helpers.R")) {
+    source("RCode/01_helpers.R")
+  } else {
+    stop("Cannot find 01_helpers.R. Check your working directory.")
+  }
 }
 
-
-# ---- Helper function robust numeric conversion ----
-to_num <- function(x) {
-  suppressWarnings({
-    x <- as.character(x)
-    x <- gsub(",", "", x)          # remove commas
-    x <- gsub("\\$", "", x)        # remove $
-    x <- gsub("\\s+", "", x)       # remove spaces
-    x <- gsub("[()]", "-", x)      # (2000) → -2000
-    x <- gsub("[^0-9eE.+\\-]", "", x)  # KEEP digits, + - . e E
-    as.numeric(x)
-  })
-}
+# Always work from the project root defined in 00_settings.R
+setwd(ROOT_DIR)
+if (!dir.exists(OUTPUT_DIR)) dir.create(OUTPUT_DIR, recursive = TRUE)
 
 
-# ---- Load data ----
-dah_dir <- file.path(getwd(), "stephen_data")
+dah_file <- file.path(STEPHEN_DIR, FILE_DAH)
+assert_file(dah_file)
 
-dah_file <- file.path(dah_dir, "DAH.xlsx")
-stopifnot(file.exists(dah_file))
-
-
-stopifnot(length(dah_file) == 1)
-
-# Read in Allocated data 
+# ---- Read Direct DAH ----
 direct_dah_raw <- read.xlsx(
   xlsxFile      = dah_file,
   sheet         = "Direct_DAH_GFelig",
@@ -67,7 +45,6 @@ direct_dah_raw <- read.xlsx(
   skipEmptyCols = TRUE
 )
 
-# Clean & keep relevant columns
 DAH_Allocated <- direct_dah_raw %>%
   select(
     ISO,
@@ -83,7 +60,6 @@ DAH_Allocated <- direct_dah_raw %>%
     inT      = as.integer(inT),
     inM      = as.integer(inM)
   ) %>%
-  # drop rows where country not eligible for any disease
   filter(!(coalesce(inH, 0) == 0 &
              coalesce(inT, 0) == 0 &
              coalesce(inM, 0) == 0)) %>%
@@ -91,27 +67,23 @@ DAH_Allocated <- direct_dah_raw %>%
   arrange(ISO3) %>%
   select(ISO3, inH, inT, inM, Direct_H, Direct_T, Direct_M)
 
-
-# Read in QZA data 
+# ---- QZA totals (DAH_QZA) ----
 vals_raw <- read.xlsx(
   dah_file,
   sheet    = "DAH_QZA",
   rows     = 166,
-  cols     = 21:23,     # U, V, W
+  cols     = 21:23,
   colNames = FALSE,
   rowNames = FALSE
 )
 
-# Convert 1x3 row into numeric vector (billions)
 nums_bil <- to_num(unlist(vals_raw))
 stopifnot(length(nums_bil) == 3)
 
-# Convert from billions to absolute USD
 nums_usd <- nums_bil * 1e9
 
-# Build small DAH_QZA summary table
 DAH_QZA_all <- data.frame(
-  Disease    = c("HIV", "TB", "MAL"),
+  Disease     = c("HIV", "TB", "MAL"),
   DAH_Billion = nums_bil,
   DAH_USD     = nums_usd
 )
@@ -120,8 +92,7 @@ HIV_total <- DAH_QZA_all$DAH_USD[DAH_QZA_all$Disease == "HIV"]
 TB_total  <- DAH_QZA_all$DAH_USD[DAH_QZA_all$Disease == "TB"]
 MAL_total <- DAH_QZA_all$DAH_USD[DAH_QZA_all$Disease == "MAL"]
 
-
-# --- Helper: distribute total proportionally by Direct_ column for eligible countries ---
+# ---- Distribute QZA proportionally ----
 distribute <- function(df, elig_col, weight_col, total_amount) {
   stopifnot("ISO3" %in% names(df))
   
@@ -139,7 +110,6 @@ distribute <- function(df, elig_col, weight_col, total_amount) {
     if (s > 0) {
       alloc[idx] <- total_amount * (w[idx] / s)
     } else {
-      # All eligible weights are zero: split equally
       alloc[idx] <- total_amount / length(idx)
     }
   }
@@ -147,8 +117,6 @@ distribute <- function(df, elig_col, weight_col, total_amount) {
   tibble(ISO3 = df$ISO3, unalloc = alloc)
 }
 
-
-# Build per-disease unallocated splits (by ISO3)
 HIV_unalloc <- distribute(DAH_Allocated, "inH", "Direct_H", HIV_total) %>%
   rename(Unalloc_H = unalloc)
 
@@ -158,8 +126,6 @@ TB_unalloc  <- distribute(DAH_Allocated, "inT", "Direct_T", TB_total) %>%
 MAL_unalloc <- distribute(DAH_Allocated, "inM", "Direct_M", MAL_total) %>%
   rename(Unalloc_M = unalloc)
 
-
-# Combine into final table keyed on ISO3
 DAH_Unallocated <- DAH_Allocated %>%
   select(ISO3) %>%
   distinct() %>%
@@ -169,21 +135,17 @@ DAH_Unallocated <- DAH_Allocated %>%
   mutate(across(c(Unalloc_H, Unalloc_T, Unalloc_M), ~replace_na(.x, 0))) %>%
   arrange(ISO3)
 
-
 # Save
 write.csv(DAH_Unallocated,
-          file.path(output_path, "DAH_Unallocated.csv"),
+          file.path(OUTPUT_DIR, FILE_DAH_UNAL),
           row.names = FALSE)
 
-# Clean and save country-specific, non-fungible allocations
-DAH_Allocated <- DAH_Allocated %>%
+DAH_Allocated_export <- DAH_Allocated %>%
   select(ISO3, Direct_H, Direct_T, Direct_M) %>%
-  rename(Alloc_H = Direct_H) %>%
-  rename(Alloc_T = Direct_T) %>%
-  rename(Alloc_M = Direct_M)
+  rename(Alloc_H = Direct_H,
+         Alloc_T = Direct_T,
+         Alloc_M = Direct_M)
 
-
-write.csv(DAH_Allocated,
-          file = file.path(output_path, "DAH_Allocated.csv"),
+write.csv(DAH_Allocated_export,
+          file = file.path(OUTPUT_DIR, FILE_DAH_ALLOC),
           row.names = FALSE)
-
