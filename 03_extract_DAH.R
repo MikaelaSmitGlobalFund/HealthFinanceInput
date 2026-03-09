@@ -3,7 +3,7 @@
 # DAH extraction and QZA allocation
 # -----------------------------------------
 
-rm(list = ls())
+#rm(list = ls())
 
 # Auto-load settings & helpers if they are not loaded yet
 if (!exists("ROOT_DIR")) {

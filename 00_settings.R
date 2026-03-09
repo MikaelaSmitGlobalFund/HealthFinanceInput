@@ -12,7 +12,7 @@ GIDEON_DIR  <- file.path(ROOT_DIR, "gideon_data")
 
 # ---- Core input files ----
 # DRM workbook 
-FILE_DRM        <- "For Mikaela Testing HTM through 2035 with Oct 24 WEO.xlsx"
+FILE_DRM        <- "DRM_Main_Output.xlsx"
 
 # Modelling outputs
 FILE_HIV_MODEL  <- "HIV cost impact results 7nov24.csv"

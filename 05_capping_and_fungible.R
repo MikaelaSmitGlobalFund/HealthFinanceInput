@@ -74,24 +74,24 @@ hiv_df <- hiv_rn %>%
     RN                = to_num_simple(RN),
     econgrowth_uncap  = to_num_simple(econgrowth_uncap),
     dipi50_uncap      = to_num_simple(dipi50_uncap),
-    dipi80_uncap      = to_num_simple(dipi80_uncap),
+    #dipi80_uncap      = to_num_simple(dipi80_uncap),
     Alloc_H           = to_num_simple(Alloc_H)
   ) %>%
-  mutate(across(c(RN, econgrowth_uncap, dipi50_uncap, dipi80_uncap, Alloc_H),
+  mutate(across(c(RN, econgrowth_uncap, dipi50_uncap, Alloc_H),
                 ~ tidyr::replace_na(.x, 0))) %>%
   mutate(
     econ_dom_cap   = pmin(econgrowth_uncap, RN),
     dipi50_dom_cap = pmin(dipi50_uncap,     RN),
-    dipi80_dom_cap = pmin(dipi80_uncap,     RN),
+    #dipi80_dom_cap = pmin(dipi80_uncap,     RN),
     econ_base_DAH   = econ_dom_cap   + Alloc_H,
     dipi50_base_DAH = dipi50_dom_cap + Alloc_H,
-    dipi80_base_DAH = dipi80_dom_cap + Alloc_H,
+    #dipi80_base_DAH = dipi80_dom_cap + Alloc_H,
     econgrowth_capped = pmin(econ_base_DAH,   RN),
     dipi50_capped     = pmin(dipi50_base_DAH, RN),
-    dipi80_capped     = pmin(dipi80_base_DAH, RN),
+    #dipi80_capped     = pmin(dipi80_base_DAH, RN),
     delta_econgrowth  = pmax(econ_base_DAH   - RN, 0),
     delta_dipi50      = pmax(dipi50_base_DAH - RN, 0),
-    delta_dipi80      = pmax(dipi80_base_DAH - RN, 0)
+    #delta_dipi80      = pmax(dipi80_base_DAH - RN, 0)
   )
 
 write.csv(
@@ -106,11 +106,11 @@ write.csv(
   row.names = FALSE
 )
 
-write.csv(
-  hiv_df %>% select(country = iso3, cost = dipi80_capped),
-  file.path(OUTPUT_DIR, "hiv_nonfung_dipi80_c.csv"),
-  row.names = FALSE
-)
+# write.csv(
+#   hiv_df %>% select(country = iso3, cost = dipi80_capped),
+#   file.path(OUTPUT_DIR, "hiv_nonfung_dipi80_c.csv"),
+#   row.names = FALSE
+# )
 
 # ================================================================
 # 2) TB NON-FUNGIBLE
@@ -130,26 +130,26 @@ tb_df <- tb_rn %>%
     RN                = to_num_simple(RN),
     econgrowth_uncap  = to_num_simple(econgrowth_uncap),
     dipi50_uncap      = to_num_simple(dipi50_uncap),
-    dipi80_uncap      = to_num_simple(dipi80_uncap),
+    #dipi80_uncap      = to_num_simple(dipi80_uncap),
     Alloc_T           = to_num_simple(Alloc_T)
   ) %>%
-  mutate(across(c(RN, econgrowth_uncap, dipi50_uncap, dipi80_uncap, Alloc_T),
+  mutate(across(c(RN, econgrowth_uncap, dipi50_uncap, Alloc_T),
                 ~ tidyr::replace_na(.x, 0))) %>%
   mutate(
     # India: use dipi50 as econ path
     econgrowth_uncap = ifelse(iso3 == "IND", dipi50_uncap, econgrowth_uncap),
     econ_dom_cap   = pmin(econgrowth_uncap, RN),
     dipi50_dom_cap = pmin(dipi50_uncap,     RN),
-    dipi80_dom_cap = pmin(dipi80_uncap,     RN),
+    #dipi80_dom_cap = pmin(dipi80_uncap,     RN),
     econ_base_DAH   = econ_dom_cap   + Alloc_T,
     dipi50_base_DAH = dipi50_dom_cap + Alloc_T,
-    dipi80_base_DAH = dipi80_dom_cap + Alloc_T,
+    #dipi80_base_DAH = dipi80_dom_cap + Alloc_T,
     econgrowth_capped = pmin(econ_base_DAH,   RN),
     dipi50_capped     = pmin(dipi50_base_DAH, RN),
-    dipi80_capped     = pmin(dipi80_base_DAH, RN),
+    #dipi80_capped     = pmin(dipi80_base_DAH, RN),
     delta_econgrowth  = pmax(econ_base_DAH   - RN, 0),
     delta_dipi50      = pmax(dipi50_base_DAH - RN, 0),
-    delta_dipi80      = pmax(dipi80_base_DAH - RN, 0)
+    #delta_dipi80      = pmax(dipi80_base_DAH - RN, 0)
   )
 
 write.csv(
@@ -164,11 +164,11 @@ write.csv(
   row.names = FALSE
 )
 
-write.csv(
-  tb_df %>% select(country = iso3, cost = dipi80_capped),
-  file.path(OUTPUT_DIR, "tb_nonfung_dipi80_c.csv"),
-  row.names = FALSE
-)
+# write.csv(
+#   tb_df %>% select(country = iso3, cost = dipi80_capped),
+#   file.path(OUTPUT_DIR, "tb_nonfung_dipi80_c.csv"),
+#   row.names = FALSE
+# )
 
 # ================================================================
 # 3) MALARIA NON-FUNGIBLE
@@ -188,24 +188,24 @@ mal_df <- mal_rn %>%
     RN                = to_num_simple(RN),
     econgrowth_uncap  = to_num_simple(econgrowth_uncap),
     dipi50_uncap      = to_num_simple(dipi50_uncap),
-    dipi80_uncap      = to_num_simple(dipi80_uncap),
+    #dipi80_uncap      = to_num_simple(dipi80_uncap),
     Alloc_M           = to_num_simple(Alloc_M)
   ) %>%
-  mutate(across(c(RN, econgrowth_uncap, dipi50_uncap, dipi80_uncap, Alloc_M),
+  mutate(across(c(RN, econgrowth_uncap, dipi50_uncap, Alloc_M),
                 ~ tidyr::replace_na(.x, 0))) %>%
   mutate(
     econ_dom_cap   = pmin(econgrowth_uncap, RN),
     dipi50_dom_cap = pmin(dipi50_uncap,     RN),
-    dipi80_dom_cap = pmin(dipi80_uncap,     RN),
+    #dipi80_dom_cap = pmin(dipi80_uncap,     RN),
     econ_base_DAH   = econ_dom_cap   + Alloc_M,
     dipi50_base_DAH = dipi50_dom_cap + Alloc_M,
-    dipi80_base_DAH = dipi80_dom_cap + Alloc_M,
+    #dipi80_base_DAH = dipi80_dom_cap + Alloc_M,
     econgrowth_capped = pmin(econ_base_DAH,   RN),
     dipi50_capped     = pmin(dipi50_base_DAH, RN),
-    dipi80_capped     = pmin(dipi80_base_DAH, RN),
+    #dipi80_capped     = pmin(dipi80_base_DAH, RN),
     delta_econgrowth  = pmax(econ_base_DAH   - RN, 0),
     delta_dipi50      = pmax(dipi50_base_DAH - RN, 0),
-    delta_dipi80      = pmax(dipi80_base_DAH - RN, 0)
+    #delta_dipi80      = pmax(dipi80_base_DAH - RN, 0)
   )
 
 write.csv(
@@ -220,26 +220,26 @@ write.csv(
   row.names = FALSE
 )
 
-write.csv(
-  mal_df %>% select(country = iso3, cost = dipi80_capped),
-  file.path(OUTPUT_DIR, "mal_nonfung_dipi80_c.csv"),
-  row.names = FALSE
-)
+# write.csv(
+#   mal_df %>% select(country = iso3, cost = dipi80_capped),
+#   file.path(OUTPUT_DIR, "mal_nonfung_dipi80_c.csv"),
+#   row.names = FALSE
+# )
 
 # ==================================
 # 4) BUILD DELTA TABLES
 # ==================================
 hiv_delta <- hiv_df %>%
   mutate(iso3 = clean_iso(iso3)) %>%
-  select(iso3, delta_econgrowth, delta_dipi50, delta_dipi80)
+  select(iso3, delta_econgrowth, delta_dipi50)
 
 tb_delta <- tb_df %>%
   mutate(iso3 = clean_iso(iso3)) %>%
-  select(iso3, delta_econgrowth, delta_dipi50, delta_dipi80)
+  select(iso3, delta_econgrowth, delta_dipi50)
 
 mal_delta <- mal_df %>%
   mutate(iso3 = clean_iso(iso3)) %>%
-  select(iso3, delta_econgrowth, delta_dipi50, delta_dipi80)
+  select(iso3, delta_econgrowth, delta_dipi50)
 
 # ==================================
 # 5) FUNGIBLE: allocation + unalloc + delta
@@ -280,7 +280,7 @@ build_fungible_files <- function(component_name,
         !!unalloc_col    := replace_na(.data[[unalloc_col]], 0),
         delta_econgrowth = replace_na(delta_econgrowth, 0),
         delta_dipi50     = replace_na(delta_dipi50, 0),
-        delta_dipi80     = replace_na(delta_dipi80, 0)
+        #delta_dipi80     = replace_na(delta_dipi80, 0)
       )
     
     econ_df <- tmp %>%
@@ -307,17 +307,17 @@ build_fungible_files <- function(component_name,
       row.names = FALSE
     )
     
-    dipi80_df <- tmp %>%
-      transmute(
-        country = ISO3,
-        cost    = Allocation + .data[[unalloc_col]] + delta_dipi80
-      )
-    write.csv(
-      dipi80_df,
-      file.path(OUTPUT_DIR,
-                paste0(file_prefix, "_fung_incl_dipi80_", sc_lab, ".csv")),
-      row.names = FALSE
-    )
+    # dipi80_df <- tmp %>%
+    #   transmute(
+    #     country = ISO3,
+    #     cost    = Allocation + .data[[unalloc_col]] + delta_dipi80
+    #   )
+    # write.csv(
+    #   dipi80_df,
+    #   file.path(OUTPUT_DIR,
+    #             paste0(file_prefix, "_fung_incl_dipi80_", sc_lab, ".csv")),
+    #   row.names = FALSE
+    # )
   }
 }
 

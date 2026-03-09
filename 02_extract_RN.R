@@ -3,7 +3,7 @@
 # Resource Need Extraction for HIV/TB/Malaria (2027–2029)
 # -----------------------------------------
 
-rm(list = ls())
+#rm(list = ls())
 
 # Auto-load settings & helpers if they are not loaded yet
 if (!exists("ROOT_DIR")) {

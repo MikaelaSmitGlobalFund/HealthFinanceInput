@@ -19,7 +19,7 @@
 #   OUTPUT_DIR/Malaria_DRM.csv
 # -----------------------------------------
 
-rm(list = ls())
+#rm(list = ls())
 
 # Auto-load settings & helpers if they are not loaded yet
 if (!exists("ROOT_DIR")) {
@@ -82,14 +82,14 @@ hiv_drm <- hiv_raw %>%
     iso3             = ISO,                         # rename to standard field
     econgrowth_uncap = to_num(DRMHggte),
     dipi50_uncap     = to_num(DRMHdipi50),
-    dipi80_uncap     = to_num(DRMHdipi80)
+    #dipi80_uncap     = to_num(DRMHdipi80)
   ) %>%
   filter(!is.na(iso3), iso3 != "") %>%              # drop empty rows
   group_by(iso3) %>%                                # in case multiple GC8 rows exist
   summarise(
     econgrowth_uncap = sum(econgrowth_uncap, na.rm = TRUE),
     dipi50_uncap     = sum(dipi50_uncap,     na.rm = TRUE),
-    dipi80_uncap     = sum(dipi80_uncap,     na.rm = TRUE),
+    #dipi80_uncap     = sum(dipi80_uncap,     na.rm = TRUE),
     .groups = "drop"
   ) %>%
   arrange(iso3)
@@ -121,14 +121,14 @@ tb_drm <- tb_raw %>%
     iso3             = ISO,
     econgrowth_uncap = to_num(DRMT_HH_ggte),
     dipi50_uncap     = to_num(DRMTdipi50),
-    dipi80_uncap     = to_num(DRMTdipi80)
+    #dipi80_uncap     = to_num(DRMTdipi80)
   ) %>%
   filter(!is.na(iso3), iso3 != "") %>%
   group_by(iso3) %>%
   summarise(
     econgrowth_uncap = sum(econgrowth_uncap, na.rm = TRUE),
     dipi50_uncap     = sum(dipi50_uncap,     na.rm = TRUE),
-    dipi80_uncap     = sum(dipi80_uncap,     na.rm = TRUE),
+    #dipi80_uncap     = sum(dipi80_uncap,     na.rm = TRUE),
     .groups = "drop"
   ) %>%
   arrange(iso3)
@@ -159,14 +159,14 @@ mal_drm <- mal_raw %>%
     iso3             = ISO,
     econgrowth_uncap = to_num(DRMM_ggte),
     dipi50_uncap     = to_num(DRMMdipi50),
-    dipi80_uncap     = to_num(DRMMdipi80)
+   # dipi80_uncap     = to_num(DRMMdipi80)
   ) %>%
   filter(!is.na(iso3), iso3 != "") %>%
   group_by(iso3) %>%
   summarise(
     econgrowth_uncap = sum(econgrowth_uncap, na.rm = TRUE),
     dipi50_uncap     = sum(dipi50_uncap,     na.rm = TRUE),
-    dipi80_uncap     = sum(dipi80_uncap,     na.rm = TRUE),
+   # dipi80_uncap     = sum(dipi80_uncap,     na.rm = TRUE),
     .groups = "drop"
   ) %>%
   arrange(iso3)
